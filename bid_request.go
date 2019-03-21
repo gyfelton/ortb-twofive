@@ -13,7 +13,7 @@ const (
 
 // Root level object
 // Request openRTB 2.5 spec
-type openRTBRequest struct {
+type OpenRTBRequest struct {
 	Test    int        `json:"test,omitempty"    valid:"range(0|1),optional"`
 	Imp     []Imp      `json:"imp"               valid:"required"`
 	App     App        `json:"app"               valid:"required"`
