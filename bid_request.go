@@ -31,11 +31,13 @@ type RequestExt struct {
 }
 
 // Imp describes an ad placement or impression being auctioned. A single bid request can include
-// multiple Imp objects, a use case for which might be an exchange that supports selling all ad positions on
-// a given page. Each Imp object has a required ID so that bids can reference them individually.
+// multiple Imp objects. For dual auction to happen, you can pass both Banner and Video
+// but one of them must be present
 type Imp struct {
 	Banner               *Banner  `json:"banner,omitempty"               valid:"optional"`
 	Video                *Video   `json:"video,omitempty"                valid:"optional"`
+	Instl                int      `json:"instl,omitempty"                valid:"range(0|1)"` // 0 = not interstitial, 1 = interstitial
+	BidFloor             float64  `json:"bidfloor,omitempty"                       valid:"optional"` // Needed if we want to changed the auction floor
 }
 
 // Banner represents the most general type of impression. Although the term “banner” may have very
@@ -59,8 +61,8 @@ type Video struct {
 	Minduration    int       `json:"minduration"              valid:"-"`
 	Maxduration    int       `json:"maxduration,omitempty"    valid:"-"`
 	Protocols      []int     `json:"protocols,omitempty"      valid:"inintarr(2|3|5|6),optional"` // 1,2,3,4,5,6,7,8,9,10 -> VAST 1.0,VAST 2.0,VAST 3.0,VAST 1.0 Wrapper,VAST 2.0 Wrapper,VAST 3.0 Wrapper,VAST 4.0,VAST 4.0 Wrapper,DAAST 1.0,DAAST 1.0 Wrapper
-	W              int       `json:"w,omitempty"              valid:"-"`
-	H              int       `json:"h,omitempty"              valid:"-"`
+	W              int       `json:"w,omitempty"              valid:"required"`
+	H              int       `json:"h,omitempty"              valid:"required"`
 	Linearity      int       `json:"linearity,omitempty"      valid:"range(1|2),optional"`            // 1,2 -> linear, non linear
 	Skip           int       `json:"skip"                     valid:"range(0|1),optional"`            // 0 no 1 yes
 	SkipMin        int       `json:"skipmin"                  valid:"optional"`
@@ -111,7 +113,6 @@ type PublisherExt struct{
 // handset, a desktop computer, set top box, or other digital device.
 type Device struct {
 	Ua             string     `json:"ua"                        valid:"required"`
-	Dnt            int        `json:"dnt"                       valid:"range(0|1),optional"` // 0 = tracking is unrestricted, 1 = tracking is restricted
 	Lmt            int        `json:"lmt"                       valid:"range(0|1),optional"` // 0 = tracking is unrestricted, 1 = tracking must be limited by commericial guidelines
 	IP             string     `json:"ip"                        valid:"ipv4,required"`
 	Make           string     `json:"make,omitempty"            valid:"in(Apple|Android|apple|android),required"`
@@ -119,22 +120,17 @@ type Device struct {
 	OS             string     `json:"os,omitempty"              valid:"-"`
 	OSV            string     `json:"osv,omitempty"             valid:"-"`
 	ConnectionType int        `json:"connection_type,omitempty" valid:"-"`
-	Ifa            string     `json:"ifa"                       valid:"required"`
+	Ifa            string     `json:"ifa,omitempty"             valid:"optional"` // passing of invalid value is enough indication that user did not want to be tracked
 }
 
 // User object contains information known or derived about the human user of the device (i.e., the
 // audience for advertising). The user id is an exchange artifact and may be subject to rotation or other
 // privacy policies. However, this user ID must be stable long enough to serve reasonably as the basis for
 // frequency capping and retargeting.
+// Since we do not have any consent machanism, we do not have ext object for user
 type User struct {
 	Age        int      `json:"age,omitempty"` // outside of spec, but i'm allowing for it
 	BuyerUID   string   `json:"buyeruid,omitempty"    valid:"-"`
 	YOB        int      `json:"yob,omitempty"         valid:"-"`
 	Gender     string   `json:"gender,omitempty"      valid:"in(M|F|O|Male|male|Female|female),optional"`
-	Ext        *UserExt `json:"ext"                   valid:"required"` // can't be blank because of GDPR
-}
-
-// UserExt being used for GDPR
-type UserExt struct {
-	Consent string `json:"consent,omitempty" valid:"range(0|1),required"` // 0: user did not consent in GDPR
 }
