@@ -120,7 +120,7 @@ type Device struct {
 	OS             string     `json:"os,omitempty"              valid:"-"`
 	OSV            string     `json:"osv,omitempty"             valid:"-"`
 	ConnectionType int        `json:"connection_type,omitempty" valid:"-"`
-	Ifa            string     `json:"ifa,omitempty"             valid:"optional"` // passing of invalid value is enough indication that user did not want to be tracked
+	Ifa            string     `json:"ifa,omitempty"             valid:"required"` // passing of invalid value is enough indication that user did not want to be tracked
 }
 
 // User object contains information known or derived about the human user of the device (i.e., the
